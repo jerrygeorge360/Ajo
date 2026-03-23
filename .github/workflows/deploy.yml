@@ -1,0 +1,65 @@
+name: Deploy Ajo
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: bet
+
+    steps:
+      # 1. Checkout
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Build frontend with Vite env vars baked in
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build frontend
+        working-directory: ./frontend
+        env:
+          VITE_CONTRACT_ADDRESS: ${{ secrets.VITE_CONTRACT_ADDRESS }}
+          VITE_RPC_URL: ${{ secrets.VITE_RPC_URL }}
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: |
+          npm install --legacy-peer-deps
+          npx vite build
+      
+      - name: Check if secrets are visible
+        run: |
+          echo "AZURE_VM_HOST (masked if secret): ${{ secrets.AZURE_VM_HOST }}"
+          echo "AZURE_VM_HOST length: $(printf '%s' '${{ secrets.AZURE_VM_HOST }}' | wc -c | xargs)"
+          echo "Is host set? ${{ secrets.AZURE_VM_HOST != '' && 'YES' || 'NO/EMPTY' }}"
+          echo "AZURE_VM_USER: ${{ secrets.AZURE_VM_USER || 'not set' }}"
+          echo "SSH key present? ${{ secrets.AZURE_VM_SSH_KEY != '' && 'YES' || 'MISSING' }}"
+
+      # 3. Deploy to Azure VM
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@master
+        with:
+          host:     ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key:      ${{ secrets.AZURE_VM_SSH_KEY }}
+          port:     22
+          script: |
+            set -e
+
+            # Pull latest code
+            cd ~/ajo || git clone https://${{ secrets.GH_TOKEN }}:x-oauth-basic@github.com/jerrygeorge360/Ajo.git ~/ajo && cd ~/ajo
+            git pull origin main
+
+            # Write root .env from GitHub secrets (overwrites on every deploy)
+            cat > .env << "ENVEOF"
+            VITE_CONTRACT_ADDRESS=${{ secrets.VITE_CONTRACT_ADDRESS }}
+            VITE_RPC_URL=${{ secrets.VITE_RPC_URL }}
+            ENVEOF
+
+            # Restart containers
+            docker compose up --build -d
+
+            echo "✅ Deployment complete!"
