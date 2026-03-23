@@ -182,4 +182,4 @@ VITE_RPC_URL=https://testnet.evm.nodes.onflow.org
 
 ## License
 
-ISC
+MIT
