@@ -25,6 +25,16 @@
 
 }
 
+.app-header {
+  position: relative;
+}
+
+.nav-logo {
+  position: absolute;
+  top: 24px;
+  left: 32px;
+}
+
 
 .header-content {
   position: relative;
