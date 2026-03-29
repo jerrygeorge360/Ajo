@@ -19,6 +19,13 @@ export function CircleDashboard({ circleId }: Props) {
   
   const [copied, setCopied] = useState(false);
   const [nowTs, setNowTs] = useState(Math.floor(Date.now() / 1000));
+  const [lastRecipient, setLastRecipient] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (state?.currentRound && Number(state.currentRound) > 0 && state.members) {
+      setLastRecipient(state.members[(Number(state.currentRound) - 1) % state.members.length]);
+    }
+  }, [state?.currentRound, state?.members]);
 
   useEffect(() => {
     if (joinSuccess) refetch();
@@ -79,6 +86,10 @@ export function CircleDashboard({ circleId }: Props) {
   const memberPct = Number(state.maxMembers) > 0
     ? (state.members.length / Number(state.maxMembers)) * 100
     : 0;
+
+  const contributionAmt = state.contributionAmount;
+  const lateFee = isLate ? (contributionAmt * 500n) / 10000n : 0n;
+  const totalRequired = contributionAmt + lateFee;
 
   const handleInvite = () => {
     const text = `Join my Ajo savings circle! 🎪\nCircle ID: #${circleId}\nContribution: ${formatEther(state.contributionAmount)} FLOW\n\nLink: ${window.location.origin}`;
@@ -209,14 +220,35 @@ export function CircleDashboard({ circleId }: Props) {
               </div>
             </div>
 
+            {/* Success Feedback for Payout */}
+            {state.currentRound > 0 && Number(state.contributorsThisRound) === 0 && (
+              <div className="cd-info-banner cd-info-banner-teal cd-payout-notif">
+                <span className="payout-sparkle">✨</span>
+                <strong>Last Round Paid Out!</strong> 
+                <span className="payout-addr cd-mono"> {lastRecipient?.slice(0, 6)}...{lastRecipient?.slice(-4)}</span> received the pot.
+              </div>
+            )}
+
             {/* Action area */}
             {isMember && !isCurrentRecipient && (
-              <ContributeButton
-                circleId={circleId}
-                contributionAmount={formatEther(state.contributionAmount)}
-                hasContributed={hasContributed || false}
-                onSuccess={() => refetch()}
-              />
+              <div className="cd-action-box">
+                {isLate && (
+                  <div className="cd-late-notice">
+                    <span className="warn-icon">⚠️</span>
+                    <div>
+                      <strong>Late Fee Applied (5%)</strong>
+                      <p>A round duration has passed. A 5% penalty is added to the pot.</p>
+                    </div>
+                  </div>
+                )}
+                <ContributeButton
+                  circleId={circleId}
+                  contributionAmount={formatEther(totalRequired)}
+                  isLate={isLate}
+                  hasContributed={hasContributed || false}
+                  onSuccess={() => refetch()}
+                />
+              </div>
             )}
             {isMember && isCurrentRecipient && (
               <div className="cd-info-banner cd-info-banner-amber">
@@ -557,6 +589,14 @@ const cdStyles = `
     border: 1px solid rgba(245,158,11,0.25);
     color: #f59e0b;
   }
+
+  .cd-payout-notif {
+    margin-top: 10px;
+    animation: cd-floatUp 0.5s ease both;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .payout-sparkle { font-size: 1.2rem; }
+  .payout-addr { font-weight: 700; color: #fff; }
 
   /* Info banners */
   .cd-info-banner {

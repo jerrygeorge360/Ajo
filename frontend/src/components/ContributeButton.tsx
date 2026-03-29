@@ -5,10 +5,11 @@ interface Props {
   circleId: number;
   contributionAmount: string;
   hasContributed: boolean;
+  isLate?: boolean;
   onSuccess?: () => void;
 }
 
-export function ContributeButton({ circleId, contributionAmount, hasContributed, onSuccess }: Props) {
+export function ContributeButton({ circleId, contributionAmount, hasContributed, isLate, onSuccess }: Props) {
   const { contribute, isPending, isSuccess } = useContribute();
 
   useEffect(() => {
@@ -37,8 +38,8 @@ export function ContributeButton({ circleId, contributionAmount, hasContributed,
           </>
         ) : (
           <>
-            <span>💸</span>
-            <span>Contribute {contributionAmount} FLOW</span>
+            <span>{isLate ? '⚠️' : '💸'}</span>
+            <span>{isLate ? 'Pay Late Fee' : 'Contribute'} {contributionAmount} FLOW</span>
           </>
         )}
       </button>
