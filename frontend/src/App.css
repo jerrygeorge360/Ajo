@@ -17,18 +17,18 @@
   padding: 4rem 0 3rem;
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* grid-template-columns: 1fr 1fr; */
+  place-content: center;
+  place-items: center;
   gap: 4rem;
   align-items: center;
-  max-width: 1400px;
-  margin-left: auto;
-  margin-right: auto;
+
 }
+
 
 .header-content {
   position: relative;
   z-index: 1;
-  text-align: left;
 }
 
 .hero-image-container {
