@@ -103,3 +103,32 @@ export function useJoinCircle() {
 
   return { joinCircle, isPending, isSuccess, error };
 }
+export function useResolveLateRound() {
+  const { writeContract, isPending, isSuccess, error } = useWriteContract();
+
+  const resolveLateRound = (circleId: number) => {
+    writeContract({
+      address: CONTRACT,
+      abi: AJO_ABI,
+      functionName: 'resolveLateRound',
+      args: [BigInt(circleId)],
+    });
+  };
+
+  return { resolveLateRound, isPending, isSuccess, error };
+}
+
+export function useTriggerPayout() {
+  const { writeContract, isPending, isSuccess, error } = useWriteContract();
+
+  const triggerPayout = (circleId: number) => {
+    writeContract({
+      address: CONTRACT,
+      abi: AJO_ABI,
+      functionName: 'triggerPayout',
+      args: [BigInt(circleId)],
+    });
+  };
+
+  return { triggerPayout, isPending, isSuccess, error };
+}

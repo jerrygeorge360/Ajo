@@ -6,7 +6,7 @@ import { CircleDashboard } from "./components/CircleDashboard";
 import { CircleBrowser } from "./components/CircleBrowser";
 import { Scene3D } from "./components/Scene3D";
 import { useCircleCount } from "./hooks/useAjo";
-import logo from "../public/logo.svg";
+import logo from "/logo.svg";
 import "./App.css";
 
 function App() {
@@ -15,13 +15,19 @@ function App() {
   const { disconnect } = useDisconnect();
   const { data: circleCount } = useCircleCount();
   const [viewCircleId, setViewCircleId] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<'manage' | 'create'>('manage');
+
+  const onSelectCircle = (id: number) => {
+    setViewCircleId(id);
+    setActiveTab('manage');
+  };
 
   return (
     <div className="app-container">
       <Scene3D />
 
       <motion.header
-        className="app-header"
+        className={`app-header ${isConnected ? 'header-condensed' : ''}`}
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
@@ -112,55 +118,78 @@ function App() {
         </motion.div>
       ) : (
         <>
-          <motion.div
-            className="wallet-info"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
+          <motion.nav 
+            className="app-nav-bar"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
           >
-            <div className="wallet-badge">
-              <span className="wallet-icon">👛</span>
-              <span className="wallet-address">
-                {address?.slice(0, 6)}...{address?.slice(-4)}
-              </span>
+            <div className="nav-left">
+              <div className="tab-buttons">
+                <button 
+                  className={`tab-btn ${activeTab === 'manage' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('manage')}
+                >
+                   Dashboard
+                </button>
+                <button 
+                  className={`tab-btn ${activeTab === 'create' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('create')}
+                >
+                   Start New Circle
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => disconnect()}
-              className="btn btn-secondary btn-small"
-            >
-              Disconnect
-            </button>
-          </motion.div>
 
-          <div className="content-grid">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-              <CreateCircle />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <CircleBrowser onSelectCircle={setViewCircleId} />
-            </motion.div>
-
-            {circleCount && Number(circleCount) > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.4 }}
+            <div className="wallet-info">
+              <div className="wallet-badge">
+                <span className="wallet-icon">👛</span>
+                <span className="wallet-address">
+                  {address?.slice(0, 6)}...{address?.slice(-4)}
+                </span>
+              </div>
+              <button
+                onClick={() => disconnect()}
+                className="btn btn-secondary btn-small logout-btn"
               >
-                <CircleDashboard circleId={viewCircleId} />
-              </motion.div>
-            )}
+                Disconnect
+              </button>
+            </div>
+          </motion.nav>
+
+          <div className="dashboard-layout">
+            <aside className="app-sidebar">
+               <CircleBrowser onSelectCircle={onSelectCircle} />
+            </aside>
+
+            <main className="main-stage">
+              {activeTab === 'create' ? (
+                <motion.div
+                  key="create"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                >
+                  <CreateCircle />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="manage"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                >
+                   {circleCount && Number(circleCount) > 0 ? (
+                      <CircleDashboard circleId={viewCircleId} />
+                   ) : (
+                      <div className="empty-dashboard">
+                         <div className="empty-icon">📂</div>
+                         <h3>Select a circle from the sidebar to manage it.</h3>
+                         <p>Or start a new one to begin your savings journey.</p>
+                      </div>
+                   )}
+                </motion.div>
+              )}
+            </main>
           </div>
         </>
       )}

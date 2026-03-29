@@ -359,5 +359,18 @@ export const AJO_ABI = [
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "circleId",
+        "type": "uint256"
+      }
+    ],
+    "name": "resolveLateRound",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
 ] as const;

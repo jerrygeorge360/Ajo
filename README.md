@@ -1,185 +1,345 @@
-# Ajo — Consumer DeFi Savings Circles on Flow
+# Ajo — Decentralized Savings Circles on Flow
 
-> The oldest coordination primitive, rebuilt as an intuitive, trust-minimized financial app.
+> **The oldest coordination primitive, rebuilt as a trust-minimized on-chain financial app.**
 
-Ajo is a decentralized rotating savings circle (ROSCA/tontine) built on **Flow EVM Testnet**.  
-It turns a community savings behavior people already understand into a modern on-chain experience with real-time visibility, automated round logic, and strong default handling.
-
----
-
-## Why this project is strong for Consumer DeFi
-
-Consumer DeFi should feel like everyday finance: simple, reliable, and habit-forming.
-
-Ajo is designed around exactly that:
-
-- **Clear mental model:** users join a circle, contribute each round, and receive payouts in rotation.
-- **Automation-first behavior:** rounds auto-progress and payouts auto-trigger when contributions are complete.
-- **Invisible coordination overhead:** no admin trust assumptions, no manual spreadsheet reconciliation.
-- **Safety without complexity:** late fees + grace windows + defaulter resolution to keep circles healthy.
-- **Accessible UX:** live status, countdown timers, contribution progress, and member visibility.
-
-This is DeFi as a practical financial routine—not speculative complexity.
+[![Flow EVM Testnet](https://img.shields.io/badge/Network-Flow%20EVM%20Testnet-00EF8B?style=flat-square)](https://evm-testnet.flowscan.io)
+[![Solidity](https://img.shields.io/badge/Solidity-%5E0.8.24-363636?style=flat-square&logo=solidity)](https://soliditylang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![Hackathon: PL_Genesis](https://img.shields.io/badge/Hackathon-PL__Genesis-blueviolet?style=flat-square)](https://plgenesis.com)
 
 ---
 
-## Alignment with the Flow Consumer DeFi Challenge
+<!-- BANNER IMAGE PLACEHOLDER -->
+<!-- Replace with: ![Ajo Banner](./assets/banner.png) -->
+> 📸 _[Banner image placeholder — add a 1200×630 hero image here]_
 
-### 1) Intuitive UX over crypto jargon
-- Human-readable circle model (contribution, round duration, members)
-- Guided create/join/track workflow in the frontend
-- Real-time dashboard for round state and next recipient
+---
 
-### 2) Automation and reliability
-- Auto-start when a circle fills
-- Auto-payout when required contributions are complete
-- `resolveLateRound()` to recover stalled rounds after grace period
+## Table of Contents
 
-### 3) Security that stays in the background
-- Reentrancy protection on critical external functions
-- Recipient-exempt contribution model (recipient does not pay in own round)
-- Defaulter removal after grace period to protect active participants
+- [What is Ajo?](#what-is-ajo)
+- [Why Ajo?](#why-ajo)
+- [Demo](#demo)
+- [Architecture](#architecture)
+- [Core Features](#core-features)
+- [Smart Contract Highlights](#smart-contract-highlights)
+- [Tech Stack](#tech-stack)
+- [Live Deployment](#live-deployment)
+- [Project Structure](#project-structure)
+- [Quick Start](#quick-start)
+- [Environment Variables](#environment-variables)
+- [Running Tests](#running-tests)
+- [Hackathon Alignment](#hackathon-alignment)
+- [Roadmap](#roadmap)
+- [License](#license)
 
-### 4) Built for high-volume user-facing apps on Flow
-- Deployed on **Flow EVM Testnet**
-- EVM-native Solidity stack for fast builder iteration
-- Frontend architecture prepared for frequent state updates
+---
 
-### Example: Flow is seamless for EVM builders (not only Cadence)
+## What is Ajo?
 
-Ajo is a practical example of this:
+**Ajo** is a decentralized rotating savings circle — known globally as a ROSCA (Rotating Savings and Credit Association) or *tontine* — built on **Flow EVM Testnet**.
 
-- We wrote the core protocol in **Solidity** (`contracts/Ajo.sol`), tested with **Hardhat**, and deployed to **Flow EVM Testnet**.
-- The frontend uses standard EVM tooling (**wagmi + viem**) exactly like an Ethereum-style app.
-- Users connect with MetaMask to Flow RPC (`chainId 545`) and interact with the contract with no Cadence-specific setup required.
+A savings circle is simple: a group of people agree to each contribute a fixed amount every period. Each round, one member receives the entire pot. Everyone saves. Everyone gets paid out. No bank required.
 
-This shows Flow is not limited to Cadence-only development paths. Teams can ship consumer DeFi quickly with familiar EVM workflows, while still having the option to expand into Cadence-based capabilities when needed.
+Ajo takes this centuries-old community practice and puts it fully on-chain:
+
+- No trusted admin
+- No spreadsheet reconciliation
+- No manual payouts
+- Just code, automation, and community
+
+---
+
+## Why Ajo?
+
+Savings circles are already practiced by hundreds of millions of people worldwide — from West Africa's *Ajo* and *Esusu*, to East Asia's *Hui*, to Latin America's *Tandas*. These communities already understand the mental model.
+
+The problem isn't the concept. The problem is the trust layer — someone always has to hold the money, track the rounds, and handle defaulters.
+
+Ajo eliminates that trust problem entirely. The contract holds the funds, the contract runs the rounds, and the contract resolves defaults. All participants need is a wallet.
+
+---
+
+## Demo
+
+<!-- DEMO VIDEO PLACEHOLDER -->
+<!-- Replace with: [![Watch Demo](./assets/demo-thumbnail.png)](https://youtube.com/your-demo-link) -->
+> 🎬 _[Demo video placeholder — embed your YouTube demo link here]_  
+> `[![Watch the Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://youtube.com/watch?v=YOUR_VIDEO_ID)`
+
+<!-- LIVE DEMO SCREENSHOT PLACEHOLDER -->
+<!-- Replace with: ![App Screenshot](./assets/screenshot-dashboard.png) -->
+> 📸 _[App screenshot placeholder — add dashboard screenshot here]_
+
+**Live Demo:** _[Add your deployed frontend URL here]_
+
+---
+
+## Architecture
+
+### System Overview
+
+```mermaid
+graph TD
+    User["👤 User (MetaMask)"] -->|wagmi + viem| Frontend["⚛️ React Frontend\n(Vite + TypeScript)"]
+    Frontend -->|EVM JSON-RPC| FlowEVM["⛓️ Flow EVM Testnet\nChain ID: 545"]
+    FlowEVM -->|calls| Contract["📄 Ajo.sol\n(Solidity ^0.8.24)"]
+
+    subgraph Smart Contract Logic
+        Contract --> CircleFactory["🔵 Circle Factory\ncreateCircle()"]
+        Contract --> JoinLogic["🟢 Join Logic\njoinCircle()"]
+        Contract --> RoundLogic["🔄 Round Logic\ncontribute() → autoAdvance()"]
+        Contract --> PayoutLogic["💸 Payout Logic\ntriggerPayout()"]
+        Contract --> DefaultLogic["⚠️ Default Handler\nresolveLateRound()"]
+    end
+
+    subgraph Circle Lifecycle
+        Open["🟡 OPEN\nAccepting members"] -->|circle fills| Active["🟢 ACTIVE\nRounds in progress"]
+        Active -->|all rounds done| Completed["✅ COMPLETED"]
+        Active -->|grace period exceeded| Resolve["🔧 resolveLateRound()\nRemove defaulter"]
+        Resolve --> Active
+    end
+
+    Contract -.->|emits events| Frontend
+    Frontend -->|polls state| Contract
+```
+
+### Round Flow
+
+```mermaid
+sequenceDiagram
+    participant M as Members
+    participant C as Ajo Contract
+    participant R as Recipient
+
+    Note over M,C: Circle is ACTIVE
+    M->>C: contribute() [each non-recipient member]
+    C->>C: roundCollected += amount
+    C->>C: Check if all contributions received
+    C->>R: triggerPayout() → transfer full pot
+    C->>C: Advance to next round
+    Note over C: Next recipient rotates
+    C->>M: Emit RoundAdvanced event
+```
+
+### Late / Default Handling
+
+```mermaid
+flowchart LR
+    A[Round starts] --> B{Contributions complete\nbefore deadline?}
+    B -- Yes --> C[Auto-payout to recipient]
+    B -- No --> D[Grace period begins]
+    D --> E{Paid within\ngrace window?}
+    E -- Yes --> F[Late fee charged\nPayout triggers]
+    E -- No --> G[resolveLateRound called]
+    G --> H[Defaulter removed from circle]
+    H --> I[Round re-runs with\nremaining members]
+```
 
 ---
 
 ## Core Features
 
-- Create a savings circle with:
-	- fixed contribution amount
-	- round duration
-	- maximum members
-- Join existing circles
-- Automatic status transitions: Open → Active → Completed
-- Round-by-round rotating payouts
-- Late fee mechanics for delayed contributions
-- Grace-period-based defaulter resolution
-- Recipient exemption in their payout round
-- Real-time frontend polling and round countdown
+| Feature | Description |
+|---|---|
+| **Create a Circle** | Set contribution amount, round duration, and max members |
+| **Join a Circle** | Browse open circles and join with one transaction |
+| **Auto-Start** | Circle activates automatically when membership fills |
+| **Auto-Payout** | Payout triggers automatically once all contributions are in |
+| **Rotating Recipients** | Every member gets the pot exactly once, in rotation |
+| **Late Fees** | Configurable late fee (BPS) for delayed contributions |
+| **Grace Period** | Window for late payers before defaulter resolution kicks in |
+| **Defaulter Resolution** | `resolveLateRound()` removes a defaulter after grace period |
+| **Recipient Exemption** | Recipient does not contribute in their own payout round |
+| **Real-time Dashboard** | Live round status, countdown timers, contribution progress |
 
 ---
 
 ## Smart Contract Highlights
 
-`contracts/Ajo.sol` includes:
+**Contract:** `contracts/Ajo.sol`
 
-- Circle lifecycle management
-- Per-round accounting (`roundCollected`)
-- Late fee configuration (`LATE_FEE_BPS`)
-- Grace period enforcement (`GRACE_PERIOD`)
-- Recovery function for stalled rounds (`resolveLateRound`)
-- Recipient-aware contribution rules
+```
+Key mechanisms:
+├── Circle lifecycle management (Open → Active → Completed)
+├── Per-round accounting via roundCollected mapping
+├── Late fee configuration (LATE_FEE_BPS constant)
+├── Grace period enforcement (GRACE_PERIOD constant)
+├── resolveLateRound() — recovery function for stalled rounds
+├── Recipient-aware contribution rules (exempt in own round)
+└── Reentrancy protection on all external fund-moving functions
+```
 
-Test coverage validates circle creation, payouts, round advancement, late fee behavior, and defaulter handling.
-
----
-
-## Live Deployment
-
-- **Network:** Flow EVM Testnet
-- **Contract:** `0x8a1515Bce4Fb424343E8187959dF197cB33Fc1b9`
-- **Explorer:** https://evm-testnet.flowscan.io
-- **RPC:** https://testnet.evm.nodes.onflow.org
-- **Chain ID:** 545
-
----
-
-## Project Structure
-
-- `contracts/` — Solidity smart contracts
-- `test/` — Hardhat test suite
-- `deploy/` — deployment scripts
-- `frontend/` — React + Vite dApp UI
+**Test coverage** (`test/`) validates:
+- Circle creation with various parameters
+- Member join flow and capacity enforcement
+- Round advancement and payout logic
+- Late fee calculation and application
+- Defaulter removal and round recovery
 
 ---
 
 ## Tech Stack
 
-- Solidity `^0.8.24`
-- Hardhat
-- OpenZeppelin
-- React + Vite + TypeScript
-- wagmi + viem
-- Three.js / React Three Fiber (UI experience layer)
-- Framer Motion (interaction + motion)
+### Smart Contracts
+- **Solidity** `^0.8.24`
+- **Hardhat** — compile, test, deploy
+- **OpenZeppelin** — security primitives (ReentrancyGuard)
+
+### Frontend
+- **React** + **Vite** + **TypeScript**
+- **wagmi** + **viem** — EVM wallet connection and contract interaction
+- **Three.js** / **React Three Fiber** — immersive UI experience layer
+- **Framer Motion** — interaction animations
+
+### Infrastructure
+- **Flow EVM Testnet** — deployment target (Chain ID: 545)
+- **MetaMask** — wallet integration
+
+---
+
+## Live Deployment
+
+| Property | Value |
+|---|---|
+| **Network** | Flow EVM Testnet |
+| **Contract Address** | `0x8a1515Bce4Fb424343E8187959dF197cB33Fc1b9` |
+| **Block Explorer** | [evm-testnet.flowscan.io](https://evm-testnet.flowscan.io) |
+| **RPC URL** | `https://testnet.evm.nodes.onflow.org` |
+| **Chain ID** | `545` |
+
+---
+
+## Project Structure
+
+```
+Ajo/
+├── contracts/
+│   └── Ajo.sol              # Core ROSCA smart contract
+├── deploy/
+│   └── deploy.ts            # Hardhat deployment script
+├── test/
+│   └── Ajo.test.ts          # Full test suite
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # UI components
+│   │   ├── hooks/           # wagmi contract hooks
+│   │   ├── pages/           # App pages (Home, Circle, Dashboard)
+│   │   └── main.tsx         # App entry point
+│   └── .env                 # Frontend environment config
+├── hardhat.config.ts
+├── package.json
+└── .env.example
+```
 
 ---
 
 ## Quick Start
 
 ### Prerequisites
-- Node.js v20 LTS
-- MetaMask (or compatible EVM wallet)
-- Flow EVM Testnet FLOW (for gas)
 
-### Install and run
+- Node.js **v20 LTS**
+- MetaMask (or compatible EVM wallet)
+- Flow EVM Testnet FLOW for gas — get testnet FLOW from the [Flow faucet](https://testnet-faucet.onflow.org/)
+
+### Install & Run
 
 ```bash
-# install root deps
+# Clone the repository
+git clone https://github.com/jerrygeorge360/Ajo.git
+cd Ajo
+
+# Install root dependencies
 npm install
 
-# compile contracts
+# Compile contracts
 npm run build
 
-# run tests
+# Run tests
 npm test
 
-# run frontend/dev stack
+# Start the frontend dev server
 npm run dev
 ```
 
-### Environment
+The frontend will be available at `http://localhost:5173`.
 
-Root `.env`:
+---
+
+## Environment Variables
+
+**Root `.env`** (for contract deployment):
 
 ```bash
-PRIVATE_KEY=0x... 
+PRIVATE_KEY=0x...your_deployer_private_key...
 VITE_RPC_URL=https://testnet.evm.nodes.onflow.org
 ```
 
-`frontend/.env`:
+**`frontend/.env`** (for the dApp UI):
 
 ```bash
 VITE_CONTRACT_ADDRESS=0x8a1515Bce4Fb424343E8187959dF197cB33Fc1b9
 VITE_RPC_URL=https://testnet.evm.nodes.onflow.org
 ```
 
----
-
-## Hackathon Submission Checklist
-
-- [ ] Summary
-- [ ] Demo video
-- [ ] GitHub repository
-- [ ] Live demo
-- [ ] Documentation
+Copy `.env.example` to `.env` and fill in your values.
 
 ---
 
-## Roadmap (Consumer DeFi Enhancements)
+## Running Tests
 
-- Walletless onboarding (email/passkeys)
-- Sponsored gas for first-time users
-- Rule-based autopilot contributions
-- Natural-language transaction intents
-- Advanced trust scoring and reminders
+```bash
+# Run all contract tests
+npm test
+
+# Run with verbose output
+npx hardhat test --verbose
+```
+
+Test coverage includes circle creation, join enforcement, round advancement, payout triggers, late fee math, and defaulter resolution.
+
+---
+
+## Hackathon Alignment
+
+### Flow: The Future of Finance (Consumer DeFi)
+
+Ajo directly addresses the Flow Consumer DeFi challenge:
+
+- **Intuitive UX** — the savings circle mental model is universally understood, no crypto jargon required
+- **Automation-first** — rounds auto-start, auto-pay, and auto-recover from defaults without manual intervention
+- **EVM-native on Flow** — written in Solidity, deployed with Hardhat, frontend uses wagmi/viem — proving Flow is welcoming to EVM teams
+- **Real financial utility** — solves a genuine coordination problem for communities that already practice ROSCAs
+
+### Protocol Labs — Crypto Track
+
+Ajo aligns with the Crypto track's vision of new economic coordination systems:
+
+- Programmable group savings with trustless enforcement
+- Automated round-by-round payout logic
+- On-chain transparency and auditability for every contribution and payout
+- Savings circles (digital tontines) are explicitly listed as an example use case in the Crypto track
+
+### Fresh Code
+
+This is a **fresh code** submission built specifically for PL_Genesis.
+
+---
+
+## Roadmap
+
+Planned enhancements for production Consumer DeFi:
+
+- [ ] **Walletless onboarding** — email and passkey login via account abstraction
+- [ ] **Sponsored gas** — first-time users pay zero fees
+- [ ] **Autopilot contributions** — schedule automatic contributions via rules
+- [ ] **Natural-language intents** — "add me to a 5-person circle, 10 FLOW per round"
+- [ ] **Trust scoring** — on-chain reputation for reliable circle members
+- [ ] **Mobile-first PWA** — installable on Android and iOS
+- [ ] **Multi-token support** — stablecoins alongside native FLOW
 
 ---
 
 ## License
 
-MIT
+MIT © 2025 — [jerrygeorge360](https://github.com/jerrygeorge360)

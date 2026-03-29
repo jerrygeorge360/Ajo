@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useCircleCount, useCircleState } from '../hooks/useAjo';
 
 interface CircleBrowserProps {
@@ -6,7 +7,10 @@ interface CircleBrowserProps {
 
 export function CircleBrowser({ onSelectCircle }: CircleBrowserProps) {
   const { data: circleCount } = useCircleCount();
-  const circles = Array.from({ length: Number(circleCount || 0) }).map((_, i) => i);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [limit, setLimit] = useState<number>(6);
+  
+  const circles = Array.from({ length: Number(circleCount || 0) }).map((_, i) => i).reverse(); // Show newest first
 
   return (
     <>
@@ -36,85 +40,138 @@ export function CircleBrowser({ onSelectCircle }: CircleBrowserProps) {
 
         .cb-wrap {
           font-family: 'Syne', sans-serif;
-          background: linear-gradient(160deg, #0f1218 0%, #0a0e14 60%, #0d1117 100%);
-          border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 24px;
-          padding: 32px;
+          background: transparent;
+          border: none;
+          padding: 0;
           position: relative;
-          overflow: hidden;
           animation: floatUp 0.5s ease both;
         }
-        .cb-wrap::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(ellipse at 80% 0%, rgba(245,158,11,0.05) 0%, transparent 55%),
-                      radial-gradient(ellipse at 20% 100%, rgba(14,165,233,0.04) 0%, transparent 50%);
-          pointer-events: none;
-        }
-        .cb-wrap::after {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 2px;
-          background: linear-gradient(90deg, #f59e0b, #0ea5e9, #7c6af7, #f59e0b);
-          background-size: 300% 100%;
-          animation: borderSpin 4s linear infinite;
-          border-radius: 24px 24px 0 0;
-        }
+        .cb-wrap::before, .cb-wrap::after { display: none; }
 
         .cb-header {
           display: flex;
           align-items: center;
-          gap: 14px;
-          margin-bottom: 28px;
+          gap: 10px;
+          margin-bottom: 20px;
+          padding: 0 5px;
         }
         .cb-icon {
-          width: 52px; height: 52px;
-          border-radius: 14px;
-          background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(14,165,233,0.2));
-          border: 1px solid rgba(245,158,11,0.3);
+          width: 32px; height: 32px;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.05);
           display: flex; align-items: center; justify-content: center;
-          font-size: 1.5rem;
-          flex-shrink: 0;
-          backdrop-filter: blur(8px);
+          font-size: 1rem;
         }
         .cb-title {
-          font-size: 1.45rem; font-weight: 800;
-          color: #fff; letter-spacing: -0.02em;
-          line-height: 1.1; margin: 0;
+          font-size: 1rem; font-weight: 700;
+          color: rgba(255,255,255,0.7); letter-spacing: -0.01em;
         }
-        .cb-subtitle {
-          font-family: 'DM Mono', monospace;
-          font-size: 0.7rem;
-          color: rgba(255,255,255,0.35);
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          margin-top: 3px;
-        }
+        .cb-subtitle { display: none; }
 
-        .cb-divider {
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
-          margin-bottom: 24px;
-        }
+        .cb-divider { display: none; }
 
         .cb-count-pill {
           display: inline-flex; align-items: center; gap: 6px;
-          background: rgba(245,158,11,0.1);
-          border: 1px solid rgba(245,158,11,0.2);
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 20px;
-          padding: 4px 12px;
+          padding: 3px 10px;
           font-family: 'DM Mono', monospace;
-          font-size: 0.68rem;
-          color: #f59e0b;
-          letter-spacing: 0.08em;
-          margin-bottom: 20px;
+          font-size: 0.6rem;
+          color: rgba(255,255,255,0.4);
+          margin-bottom: 16px;
         }
         .cb-count-dot {
           width: 6px; height: 6px; border-radius: 50%;
           background: #f59e0b;
           animation: pulseGlow 2s ease infinite;
+        }
+
+        .cb-controls {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 24px;
+        }
+
+        .cb-toggle {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px;
+          padding: 6px 12px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .cb-toggle:hover {
+          background: rgba(255,255,255,0.07);
+          border-color: rgba(255,255,255,0.15);
+        }
+        .cb-toggle-label {
+          font-family: 'DM Mono', monospace;
+          font-size: 0.65rem;
+          color: rgba(255,255,255,0.4);
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+        }
+        .cb-switch {
+          width: 32px; height: 18px;
+          background: rgba(255,255,255,0.1);
+          border-radius: 10px;
+          position: relative;
+          transition: background 0.3s ease;
+        }
+        .cb-switch-active {
+          background: #7c6af7;
+        }
+        .cb-switch-knob {
+          width: 14px; height: 14px;
+          background: #fff;
+          border-radius: 50%;
+          position: absolute;
+          top: 2px; left: 2px;
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .cb-switch-active .cb-switch-knob {
+          transform: translateX(14px);
+        }
+
+        .cb-footer {
+          margin-top: 32px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+          padding-top: 24px;
+          border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .cb-btn-load {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 14px;
+          padding: 12px 28px;
+          color: #fff;
+          font-family: 'Syne', sans-serif;
+          font-weight: 700;
+          font-size: 0.85rem;
+          cursor: pointer;
+          display: flex; align-items: center; gap: 8px;
+          transition: all 0.2s;
+        }
+        .cb-btn-load:hover {
+          background: rgba(255,255,255,0.08);
+          border-color: rgba(255,255,255,0.2);
+          transform: translateY(-1px);
+        }
+        .cb-batch-info {
+           font-family: 'DM Mono', monospace;
+           font-size: 0.65rem;
+           color: rgba(255,255,255,0.25);
+           letter-spacing: 0.05em;
+           text-transform: uppercase;
         }
 
         /* Empty state */
@@ -138,9 +195,9 @@ export function CircleBrowser({ onSelectCircle }: CircleBrowserProps) {
 
         /* Grid */
         .cb-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-          gap: 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
         }
 
         /* Circle card */
@@ -160,6 +217,16 @@ export function CircleBrowser({ onSelectCircle }: CircleBrowserProps) {
           background: rgba(245,158,11,0.04);
           transform: translateY(-2px);
           box-shadow: 0 8px 28px rgba(0,0,0,0.3), 0 0 0 1px rgba(245,158,11,0.12);
+        }
+        .cc-card.historical {
+          opacity: 0.6;
+          filter: grayscale(0.4);
+          border-style: dashed;
+        }
+        .cc-card.historical:hover {
+          opacity: 0.9;
+          filter: grayscale(0);
+          border-style: solid;
         }
         .cc-card::before {
           content: '';
@@ -213,6 +280,12 @@ export function CircleBrowser({ onSelectCircle }: CircleBrowserProps) {
           padding: 3px 10px;
           border-radius: 20px;
           display: inline-flex; align-items: center; gap: 5px;
+          white-space: nowrap;
+        }
+        .cc-badge-sub {
+          opacity: 0.5;
+          font-size: 0.55rem;
+          font-weight: 300;
         }
         .cc-badge-dot {
           width: 5px; height: 5px; border-radius: 50%;
@@ -344,15 +417,42 @@ export function CircleBrowser({ onSelectCircle }: CircleBrowserProps) {
           </div>
         ) : (
           <>
-            <div className="cb-count-pill">
-              <span className="cb-count-dot" />
-              {Number(circleCount)} circle{Number(circleCount) !== 1 ? 's' : ''} active
+            <div className="cb-controls">
+              <div className="cb-count-pill">
+                <span className="cb-count-dot" />
+                {Number(circleCount)} total record{Number(circleCount) !== 1 ? 's' : ''}
+              </div>
+
+              <div className="cb-toggle" onClick={() => setShowCompleted(!showCompleted)}>
+                <span className="cb-toggle-label">{showCompleted ? "Showing All" : "Hide Completed"}</span>
+                <div className={`cb-switch ${showCompleted ? 'cb-switch-active' : ''}`}>
+                  <div className="cb-switch-knob" />
+                </div>
+              </div>
             </div>
+
             <div className="cb-grid">
-              {circles.map((circleId) => (
-                <CircleCard key={circleId} circleId={circleId} onSelect={onSelectCircle} />
+              {circles.slice(0, limit).map((circleId) => (
+                <CircleCard 
+                  key={circleId} 
+                  circleId={circleId} 
+                  onSelect={onSelectCircle} 
+                  hideIfCompleted={!showCompleted}
+                />
               ))}
             </div>
+
+            {limit < circles.length && (
+              <div className="cb-footer">
+                <div className="cb-batch-info">
+                  Viewing batch of {Math.min(limit, circles.length)} from {circles.length} entries
+                </div>
+                <button className="cb-btn-load" onClick={() => setLimit(l => l + 6)}>
+                  <span>📂</span>
+                  Load Older Circles
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -360,7 +460,15 @@ export function CircleBrowser({ onSelectCircle }: CircleBrowserProps) {
   );
 }
 
-function CircleCard({ circleId, onSelect }: { circleId: number; onSelect: (id: number) => void }) {
+function CircleCard({ 
+  circleId, 
+  onSelect, 
+  hideIfCompleted 
+}: { 
+  circleId: number; 
+  onSelect: (id: number) => void;
+  hideIfCompleted: boolean;
+}) {
   const { data: state } = useCircleState(circleId);
 
   if (!state) {
@@ -375,9 +483,12 @@ function CircleCard({ circleId, onSelect }: { circleId: number; onSelect: (id: n
   }
 
   const statusIndex = Number(state.status);
-  const statusLabels = ['Open', 'Active', 'Completed'];
+  
+  if (hideIfCompleted && statusIndex === 2) return null;
+
+  const statusLabels = ['Awaiting', 'Active', 'Completed'];
   const statusClasses = ['open', 'active', 'completed'];
-  const statusEmojis = ['🔓', '🔄', '✅'];
+  const statusEmojis = ['⏳', '🔄', '✅'];
   const statusLabel = statusLabels[statusIndex] ?? 'Unknown';
   const statusClass = statusClasses[statusIndex] ?? '';
   const statusEmoji = statusEmojis[statusIndex] ?? '❓';
@@ -385,6 +496,9 @@ function CircleCard({ circleId, onSelect }: { circleId: number; onSelect: (id: n
   const memberCount = state.members.length;
   const maxMembers = Number(state.maxMembers);
   const memberPct = maxMembers > 0 ? (memberCount / maxMembers) * 100 : 0;
+  const spotsRemaining = maxMembers - memberCount;
+
+  const isCompleted = statusIndex === 2;
 
   const handleCopyId = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -393,13 +507,16 @@ function CircleCard({ circleId, onSelect }: { circleId: number; onSelect: (id: n
   };
 
   return (
-    <div className="cc-card" onClick={() => onSelect(circleId)}>
+    <div className={`cc-card ${isCompleted ? 'historical' : ''}`} onClick={() => onSelect(circleId)}>
    
       <div className="cc-card-header">
         <h3 className="cc-card-id">Circle #{circleId}</h3>
         <span className={`cc-badge ${statusClass}`}>
           <span className="cc-badge-dot" />
           {statusEmoji} {statusLabel}
+          {statusIndex === 0 && spotsRemaining > 0 && (
+             <span className="cc-badge-sub"> — {spotsRemaining} left</span>
+          )}
         </span>
       </div>
 
