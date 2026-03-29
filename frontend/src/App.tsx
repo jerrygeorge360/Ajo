@@ -6,6 +6,7 @@ import { CircleDashboard } from "./components/CircleDashboard";
 import { CircleBrowser } from "./components/CircleBrowser";
 import { Scene3D } from "./components/Scene3D";
 import { useCircleCount } from "./hooks/useAjo";
+import logo from "../public/logo.svg";
 import "./App.css";
 
 function App() {
@@ -25,47 +26,54 @@ function App() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-          <div className="header-content">
-            <motion.div
-              className="header-badge"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              POWERED BY FLOW EVM
-            </motion.div>
+        <motion.div
+          className="nav-logo"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <img src={logo} alt="Ajo Logo" width={58} height={58} />
+        </motion.div>
+        <div className="header-content">
+          <motion.div
+            className="header-badge"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+          >
+            POWERED BY FLOW EVM
+          </motion.div>
 
-            <motion.h1
-              className="app-title"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-            >
-              Ajo
-            </motion.h1>
+          <motion.h1
+            className="app-title"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            Ajo
+          </motion.h1>
 
-            <motion.p
-              className="app-subtitle"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-            >
-              The world's oldest savings tradition, reimagined with blockchain
-              technology
-            </motion.p>
+          <motion.p
+            className="app-subtitle"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          >
+            The world's oldest savings tradition, reimagined with blockchain
+            technology
+          </motion.p>
 
-            <motion.div
-              className="live-indicator"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7, duration: 0.8 }}
-              aria-label="Live updates enabled"
-            >
-              <span className="live-dot" />
-              <span>REAL-TIME UPDATES</span>
-            </motion.div>
-          </div>
-      
+          <motion.div
+            className="live-indicator"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.8 }}
+            aria-label="Live updates enabled"
+          >
+            <span className="live-dot" />
+            <span>REAL-TIME UPDATES</span>
+          </motion.div>
+        </div>
 
         {/* <div className="hero-image-container">
           <img 
