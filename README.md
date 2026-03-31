@@ -57,8 +57,7 @@ Ajo eliminates that trust problem entirely. The contract holds the funds, the co
 
 ## Demo
 
-<!-- DEMO VIDEO PLACEHOLDER -->
-[![Watch the Demo](https://img.youtube.com/vi/bjDr3jjS3JA/maxresdefault.jpg)](https://youtu.be/bjDr3jjS3JA)
+[![Ajo Demo Video](https://img.shields.io/badge/Watch_Demo-3--5_min-red?style=for-the-badge&logo=youtube)](https://youtu.be/bjDr3jjS3JA)
 
 **Live Demo:** [https://ajo.prodigal.sbs/](https://ajo.prodigal.sbs/)
 
