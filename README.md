@@ -9,11 +9,6 @@
 
 ---
 
-<!-- BANNER IMAGE PLACEHOLDER -->
-<!-- Replace with: ![Ajo Banner](./assets/banner.png) -->
-> 📸 _[Banner image placeholder — add a 1200×630 hero image here]_
-
----
 
 ## Table of Contents
 
@@ -63,15 +58,9 @@ Ajo eliminates that trust problem entirely. The contract holds the funds, the co
 ## Demo
 
 <!-- DEMO VIDEO PLACEHOLDER -->
-<!-- Replace with: [![Watch Demo](./assets/demo-thumbnail.png)](https://youtube.com/your-demo-link) -->
-> 🎬 _[Demo video placeholder — embed your YouTube demo link here]_  
-> `[![Watch the Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://youtube.com/watch?v=YOUR_VIDEO_ID)`
+[![Watch the Demo](https://img.youtube.com/vi/bjDr3jjS3JA/maxresdefault.jpg)](https://youtu.be/bjDr3jjS3JA)
 
-<!-- LIVE DEMO SCREENSHOT PLACEHOLDER -->
-<!-- Replace with: ![App Screenshot](./assets/screenshot-dashboard.png) -->
-> 📸 _[App screenshot placeholder — add dashboard screenshot here]_
-
-**Live Demo:** _[Add your deployed frontend URL here]_
+**Live Demo:** [https://ajo.prodigal.sbs/](https://ajo.prodigal.sbs/)
 
 ---
 
@@ -79,62 +68,15 @@ Ajo eliminates that trust problem entirely. The contract holds the funds, the co
 
 ### System Overview
 
-```mermaid
-graph TD
-    User["👤 User (MetaMask)"] -->|wagmi + viem| Frontend["⚛️ React Frontend\n(Vite + TypeScript)"]
-    Frontend -->|EVM JSON-RPC| FlowEVM["⛓️ Flow EVM Testnet\nChain ID: 545"]
-    FlowEVM -->|calls| Contract["📄 Ajo.sol\n(Solidity ^0.8.24)"]
-
-    subgraph Smart Contract Logic
-        Contract --> CircleFactory["🔵 Circle Factory\ncreateCircle()"]
-        Contract --> JoinLogic["🟢 Join Logic\njoinCircle()"]
-        Contract --> RoundLogic["🔄 Round Logic\ncontribute() → autoAdvance()"]
-        Contract --> PayoutLogic["💸 Payout Logic\ntriggerPayout()"]
-        Contract --> DefaultLogic["⚠️ Default Handler\nresolveLateRound()"]
-    end
-
-    subgraph Circle Lifecycle
-        Open["🟡 OPEN\nAccepting members"] -->|circle fills| Active["🟢 ACTIVE\nRounds in progress"]
-        Active -->|all rounds done| Completed["✅ COMPLETED"]
-        Active -->|grace period exceeded| Resolve["🔧 resolveLateRound()\nRemove defaulter"]
-        Resolve --> Active
-    end
-
-    Contract -.->|emits events| Frontend
-    Frontend -->|polls state| Contract
-```
+![System Architecture](./assets/DeFi%20flowcharts%20on%20system%20architecture.png)
 
 ### Round Flow
 
-```mermaid
-sequenceDiagram
-    participant M as Members
-    participant C as Ajo Contract
-    participant R as Recipient
-
-    Note over M,C: Circle is ACTIVE
-    M->>C: contribute() [each non-recipient member]
-    C->>C: roundCollected += amount
-    C->>C: Check if all contributions received
-    C->>R: triggerPayout() → transfer full pot
-    C->>C: Advance to next round
-    Note over C: Next recipient rotates
-    C->>M: Emit RoundAdvanced event
-```
+![Round Flow](./assets/Ajo%20contract%20flowchart%20process.png)
 
 ### Late / Default Handling
 
-```mermaid
-flowchart LR
-    A[Round starts] --> B{Contributions complete\nbefore deadline?}
-    B -- Yes --> C[Auto-payout to recipient]
-    B -- No --> D[Grace period begins]
-    D --> E{Paid within\ngrace window?}
-    E -- Yes --> F[Late fee charged\nPayout triggers]
-    E -- No --> G[resolveLateRound called]
-    G --> H[Defaulter removed from circle]
-    H --> I[Round re-runs with\nremaining members]
-```
+![Late / Default Handling](./assets/Ajo%20contract%20completion%20flowchart.png)
 
 ---
 
